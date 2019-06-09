@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>example!</title>
+</head>
+
+<script src="./phaser.js"></script>
+<body>
+	HTML5 게임 만들기 
+</body>
+<script type="text/javascript">
+	var config = {
+	    type: Phaser.AUTO,
+	    width: 800,
+	    height: 600,
+	    physics: {
+	    	default: 'arcade',
+	    	arcade: {
+	    		gravity:{ x:0, y:0},
+	    		debug: true
+	    	}
+	    },
+	    scene: {
+	        preload: preload,
+	        create: create,
+	        update: update
+	    }
+	};
+	var game = new Phaser.Game(config);
+	
+	//object 선언
+	var player, wall, fruits, cursors;
+	var gameOverText, randomNumber;
+	var tails;
+	function preload(){
+		// 게임에 필요한 데이터 로드
+		this.load.image('sky', '/assets/sky.png');
+		this.load.image('ground', '/assets/platform.png');
+		this.load.image('fruits', '/assets/apple.png');
+		this.load.image('body', '/assets/snakebody.png');
+		this.load.image('ground2', '/assets/platform2.png');
+		// this.load.image('bomb', '/assets/bomb.png');
+		this.load.spritesheet('dude', '/assets/dude.png', {frameWidth: 32, frameHeight: 48});
+
+	}
+
+   function create ()
+    {
+    	// 게임 처음 실행시 수행되는 함수
+    	//1. 게임에 필요한 배경이미지 추가
+    	this.add.image(400, 300, 'sky');
+    	//2. 정적 맵 오브젝트 추가
+    	wall = this.physics.add.staticGroup();
+    
+    	wall.create(400, 0, 'ground').setScale(2).refreshBody();
+    	wall.create(400, 600, 'ground').setScale(2).refreshBody();
+    	wall.create(0,300, 'ground2').setScale(2).refreshBody();
+    	wall.create(800,300, 'ground2').setScale(2).refreshBody();
+    	player = this.physics.add.sprite(200,200,'dude');
+    	player.setCollideWorldBounds(true);
+    	tails = this.physics.add.staticGroup();
+
+    	cursors = this.input.keyboard.createCursorKeys();
+    	randomX = Math.random()*600;
+    	randomY = Math.random()*400;
+    	fruits = this.physics.add.group({
+    		key: 'fruits',
+    		repeat: 0,
+    		setXY: { x: randomX , y: randomY}
+    	});
+    	this.physics.add.collider(player, wall, crushObjects, null, this);
+    	this.physics.add.collider(fruits, wall);
+    	this.physics.add.overlap(player, fruits, collectFruits, null, this);
+
+		// 1.object physics 개체에 추가
+		// 2.object 간 충돌처리 등록
+		// 3.충돌시 처리할 함수 선언
+
+
+    }
+
+	function update(){
+		//프레임워크에서 주기적으로 수행하는 함수
+		if (cursors.left.isDown){
+			player.setVelocityY(0);
+            player.setVelocityX(-160);
+        }else if (cursors.right.isDown){
+			player.setVelocityY(0);
+            player.setVelocityX(160);
+        }else if (cursors.up.isDown){
+            player.setVelocityX(0);
+            player.setVelocityY(-160);
+        }else if (cursors.down.isDown){
+            player.setVelocityX(0);
+            player.setVelocityY(160);
+        }
+
+	}
+
+	function crushObjects(){
+        this.physics.pause();
+		gameOverText = this.add.text(350, 300, 'game over', { fontSize: '32px', fill: '#000' });
+	}
+	function collectFruits(player, fruit){
+		 fruit.disableBody(true, true);
+		 randomX = Math.random();
+		 randomY = Math.random();
+ 		 fruits.create( randomX*600, randomY*400, 'fruits');
+        tails = tails.create(player.x-1, player.y-1, 'body');    
+        
+	}
+</script>
+</html>
+
